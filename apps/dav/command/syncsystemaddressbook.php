@@ -122,15 +122,15 @@ class SyncSystemAddressBook extends Command {
 	}
 
 	protected function ensureSystemAddressBookExists() {
-		$book = $this->backend->getAddressBooksByUri('system');
+		$systemPrincipal = "principals/system/system";
+		$book = $this->backend->getAddressBooksByUri($systemPrincipal, 'system');
 		if (!is_null($book)) {
 			return $book;
 		}
-		$systemPrincipal = "principals/system/system";
 		$this->backend->createAddressBook($systemPrincipal, 'system', [
 			'{' . Plugin::NS_CARDDAV . '}addressbook-description' => 'System addressbook which holds all users of this instance'
 		]);
 
-		return $this->backend->getAddressBooksByUri('system');
+		return $this->backend->getAddressBooksByUri($systemPrincipal, 'system');
 	}
 }

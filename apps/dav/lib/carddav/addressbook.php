@@ -50,7 +50,7 @@ class AddressBook extends \Sabre\CardDAV\AddressBook implements IShareableAddres
 	function updateShares(array $add, array $remove) {
 		/** @var CardDavBackend $carddavBackend */
 		$carddavBackend = $this->carddavBackend;
-		$carddavBackend->updateShares($this->getName(), $add, $remove);
+		$carddavBackend->updateShares($this, $add, $remove);
 	}
 
 	/**
@@ -68,7 +68,7 @@ class AddressBook extends \Sabre\CardDAV\AddressBook implements IShareableAddres
 	function getShares() {
 		/** @var CardDavBackend $carddavBackend */
 		$carddavBackend = $this->carddavBackend;
-		$carddavBackend->getShares($this->getName());
+		$carddavBackend->getShares($this->getBookId());
 	}
 
 	function getACL() {
@@ -98,11 +98,18 @@ class AddressBook extends \Sabre\CardDAV\AddressBook implements IShareableAddres
 	}
 
 	function getChild($name) {
-		$obj = $this->carddavBackend->getCard($this->addressBookInfo['id'], $name);
+		$obj = $this->carddavBackend->getCard($this->getBookId(), $name);
 		if (!$obj) {
 			throw new NotFound('Card not found');
 		}
 		return new Card($this->carddavBackend, $this->addressBookInfo, $obj);
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getBookId() {
+		return $this->addressBookInfo['id'];
 	}
 
 }
