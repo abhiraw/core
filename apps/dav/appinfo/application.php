@@ -21,9 +21,11 @@
 namespace OCA\Dav\AppInfo;
 
 use OCA\DAV\CardDAV\ContactsManager;
+use OCA\Dav\Migration\MigrateAddressbooks;
 use \OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
 use OCP\Contacts\IManager;
+use OCP\IUser;
 
 class Application extends App {
 
@@ -53,6 +55,14 @@ class Application extends App {
 			return new \OCA\DAV\CardDAV\CardDavBackend($db, $principal, $logger);
 		});
 
+		$container->registerService('MigrateAddressbooks', function($c) {
+			/** @var IAppContainer $c */
+			$db = $c->getServer()->getDatabaseConnection();
+			return new MigrateAddressbooks(
+				$db,
+				$c->query('CardDavBackend')
+			);
+		});
 	}
 
 	/**
@@ -63,6 +73,22 @@ class Application extends App {
 		/** @var ContactsManager $cm */
 		$cm = $this->getContainer()->query('ContactsManager');
 		$cm->setupContactsProvider($contactsManager, $userID);
+	}
+
+	public function migrateAddressbooks() {
+
+		try {
+			$migration = $this->getContainer()->query('MigrateAddressbooks');
+			$migration->setup();
+			$userManager = $this->getContainer()->getServer()->getUserManager();
+
+			$userManager->callForAllUsers(function($user) use($migration) {
+				/** @var IUser $user */
+				$migration->migrateForUser($user->getUID());
+			});
+		} catch (\Exception $ex) {
+			$this->getContainer()->getServer()->getLogger()->logException($ex);
+		}
 	}
 
 }

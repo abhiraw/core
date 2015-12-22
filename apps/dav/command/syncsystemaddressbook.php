@@ -78,7 +78,7 @@ class SyncSystemAddressBook extends Command {
 				$this->userManager
 		);
 
-		$this->backend = new CardDavBackend($this->dbConnection, $principalBackend);
+		$this->backend = new CardDavBackend($this->dbConnection, $principalBackend, \OC::$server->getLogger());
 
 		// ensure system addressbook exists
 		$systemAddressBook = $this->ensureSystemAddressBookExists();
